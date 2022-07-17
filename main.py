@@ -143,6 +143,7 @@ async def citata(message: Message):
     else:
       background.paste(ava, (130, 225), ava)
       idraw.text((130, 132), text, font=text_font)
+	  idraw.text((130, 132), " – " + first_name_users + " " + last_name_users, font=name_font)
 
     background.save('citata.png')
 
