@@ -8,13 +8,16 @@ from vkbottle.dispatch.rules.base import CommandRule
 import time
 import requests
 import re
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+import asyncio
+#from pilmoji import Pilmoji
+from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
+
 
 sessia='a4051407e07d7699ae90a75b81bcdf0b1549d8e1929d07ed5f383389331500206e756916aa3c18b96d9ba'
 user = User(sessia)
 api=API(sessia)
 
-
+user.on.vbml_ignore_case = True
 # Если поставить эту функцию ниже sticker_handler - она не будет работать.
 
 '''
@@ -45,69 +48,110 @@ async def kick(message: Message):
     return "Пользователь успешно исключён"
 
 @user.on.message(text=['цитата', 'цит', 'цитатни', 'цита'])
-async def kick(message: Message):
+async def citata(message: Message):
 
-  await message.answer('Ожидайте...')
+  if len(message.reply_message.text)>114:
+    await message.answer('Нельзя создать цитату такой длины!')
+  else:
+    await message.answer('Ожидайте...')
 
-  people = await user.api.users.get(user_ids=message.reply_message.from_id, fields='photo_max')
+    await asyncio.sleep(0.1)
+    people = await user.api.users.get(user_ids=message.reply_message.from_id, fields='photo_max')
 
 
-  text = message.reply_message.text
+    text = message.reply_message.text + '»'
 
-  background = Image.open('фон_3_новый.QFSqF.jpg')
-  idraw = ImageDraw.Draw(background)
+    try:
+      background = message.attachments[0].photo.sizes[-5].url
+      #await message.answer(str(message.attachments[0].photo.sizes[0].url))
 
-  headline = ImageFont.truetype('arial.ttf', size=52)
-  text_font = ImageFont.truetype('arial.ttf', size=35)
-  name_font = ImageFont.truetype('arial.ttf', size=38)
+      background = requests.get(background, allow_redirects=True)  
 
-  text = text + '»'
-  head = "Цитаты великих людей"
-  text = '«' + text[:37] + '\n' + text[37:]
-  try:
-    text = text[:74] + '\n' + text[74:]
-  except:
-    pass
+      open('background.jpg', 'wb').write(background.content)
 
-  first_name_users = people[0].first_name
-  last_name_users = people[0].last_name
+      background = Image.open('background.jpg')
 
-  idraw.text((130, 55), head, font=headline)
-  idraw.text((130, 132), text, font=text_font)
-  idraw.text((245, 255), " – " + first_name_users + " " + last_name_users, font=name_font)
-  
-  #photo = user.api.users.get(user_ids=message.reply_message.from_id, fields='photo_400')
-  
-  photo = people[0].photo_max
-  #await message.answer(str(photo))
+      background.resize((900, 436)).save('background.jpg', quality=95)
+      background = Image.open('background.jpg')
 
-  ava = requests.get(photo, allow_redirects=True)
-  open('ava.png', 'wb').write(ava.content)
+      enhancer = ImageEnhance.Brightness(background)
+      background = enhancer.enhance(0.4)
 
-  size = (110, 110)
+      background.save('background.jpg')
 
-  ava = Image.open('ava.png').convert('RGB')
+      background = Image.open('background.jpg')
+    except:
+      background = Image.open('фон_3_новый.QFSqF.jpg')
 
-  mask = Image.new('L', size, 0)
-  draw = ImageDraw.Draw(mask)
-  draw.ellipse((0, 0) + size, fill=255)
+    idraw = ImageDraw.Draw(background)
 
-  ava = ava.resize(size).convert('RGB')
+    headline = ImageFont.truetype('arial.ttf', size=52)
+    text_font = ImageFont.truetype('arial.ttf', size=35)
+    name_font = ImageFont.truetype('arial.ttf', size=38)
 
-  output = ImageOps.fit(ava, mask.size, centering=(0.5, 0.5))
-  output.putalpha(mask)
-  output.thumbnail(size, Image.ANTIALIAS)
-  output.save('ava.png')
+    head = "Цитаты великих людей"
+    text = text.replace(' ', ' ')
+    text = text[:38] + '\n' + text[38:]
 
-  ava = Image.open('ava.png')
+    #await message.answer(str(len(text)))
 
-  background.paste(ava, (130, 225), ava)
+    try:
+      text = text[:78] + '\n' + text[78:]
+    except:
+      pass
 
-  background.save('citata.png')
 
-  vk_cita = PhotoMessageUploader(user.api)
-  photo_cita_vk = await vk_cita.upload("citata.png")
-  await message.answer("💬 Ваша цитата готова!", attachment=photo_cita_vk)
+    text = '«' + text
+
+    first_name_users = people[0].first_name
+    last_name_users = people[0].last_name
+
+    idraw.text((130, 55), head, font=headline)
+    idraw.text((130, 132), text, font=text_font)
+
+    #pilmoji.text((130, 132), text.strip(), (0, 0, 0), text_font)
+    
+    
+    #photo = user.api.users.get(user_ids=message.reply_message.from_id, fields='photo_400')
+    
+    photo = people[0].photo_max
+    #await message.answer(str(photo))
+
+    ava = requests.get(photo, allow_redirects=True)
+    open('ava.png', 'wb').write(ava.content)
+
+    size = (110, 110)
+
+    ava = Image.open('ava.png').convert('RGB')
+
+    mask = Image.new('L', size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + size, fill=255)
+
+    ava = ava.resize(size).convert('RGB')
+
+    output = ImageOps.fit(ava, mask.size, centering=(0.5, 0.5))
+    output.putalpha(mask)
+    output.thumbnail(size, Image.ANTIALIAS)
+    output.save('ava.png')
+
+    ava = Image.open('ava.png')
+
+    if len(text) >= 78:
+      background.paste(ava, (130, 260), ava)
+      idraw.text((245, 285), " – " + first_name_users + " " + last_name_users, font=name_font)
+    else:
+      background.paste(ava, (130, 225), ava)
+      idraw.text((130, 132), text, font=text_font)
+
+    background.save('citata.png')
+
+    vk_cita = PhotoMessageUploader(user.api)
+    photo_cita_vk = await vk_cita.upload("citata.png")
+
+    await asyncio.sleep(0.1)
+
+    await message.answer("💬 Ваша цитата готова!", attachment=photo_cita_vk)
 
 
 
@@ -160,4 +204,5 @@ async def frend(message:Message):
 
 
 
-user.run_forever()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(user.run_polling())
