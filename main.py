@@ -11,7 +11,7 @@ import re
 import asyncio
 #from pilmoji import Pilmoji
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
-
+import random
 
 sessia='a4051407e07d7699ae90a75b81bcdf0b1549d8e1929d07ed5f383389331500206e756916aa3c18b96d9ba'
 user = User(sessia)
@@ -46,6 +46,29 @@ async def kick(message: Message):
     txt = message.reply_message.text
     await api.messages.remove_chat_user(message.peer_id - 2000000000, message.reply_message.from_id)
     return "Пользователь успешно исключён"
+
+@user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'kick'])
+async def anime(message: Message):
+  headers = {
+  "X-RapidAPI-Key": "d5310cbb81mshdc4a6cbb453ce1ep15a2b8jsnf9a0c430ddf1",
+  "X-RapidAPI-Host": "best-manga-anime-wallpapers.p.rapidapi.com"
+  }
+
+  url = "https://best-manga-anime-wallpapers.p.rapidapi.com/wallpapers/attack-on-titan-hd-wallpapers"
+
+  response = requests.request("GET", url, headers=headers).json()
+  response = response[random.randint(0, 57)]
+  #await message.answer(response)
+  await asyncio.sleep(0.1)
+  wallpaper = requests.get(response)
+  open('wallpaper.png', 'wb').write(wallpaper.content)
+
+  upload = PhotoMessageUploader(user.api)
+  uploader = await upload.upload("wallpaper.png")
+
+  
+
+  await message.answer("Ваши обои готовы", attachment=uploader)
 
 @user.on.message(text=['цитата', 'цит', 'цитатни', 'цита'])
 async def citata(message: Message):
