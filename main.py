@@ -49,6 +49,7 @@ async def kick(message: Message):
 
 @user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'kick'])
 async def anime(message: Message):
+	await message.answer('Ожидайте...')
   headers = {
   "X-RapidAPI-Key": "d5310cbb81mshdc4a6cbb453ce1ep15a2b8jsnf9a0c430ddf1",
   "X-RapidAPI-Host": "best-manga-anime-wallpapers.p.rapidapi.com"
