@@ -143,8 +143,8 @@ async def citata(message: Message):
     else:
       background.paste(ava, (130, 225), ava)
       #idraw.text((130, 132), text, font=text_font)
-			idraw.text((130, 132), " – " + first_name_users + " " + last_name_users, font=name_font)
-			
+      idraw.text((245, 250), " – " + first_name_users + " " + last_name_users, font=name_font)
+
     background.save('citata.png')
 
     vk_cita = PhotoMessageUploader(user.api)
