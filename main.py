@@ -47,7 +47,11 @@ async def kick(message: Message):
     await api.messages.remove_chat_user(message.peer_id - 2000000000, message.reply_message.from_id)
     return "Пользователь успешно исключён"
 
-@user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'kick'])
+@user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'wallpaper anime'])
+async def anime(message: Message):
+  await message.answer('Данная команда переименовона в "пикча аниме" !')
+
+@user.on.chat_message(text=['пикча аниме', 'картинка анимэ', 'пикча anime', 'картинка anime'])
 async def anime(message: Message):
   await message.answer('Ожидайте...')
   headers = {
