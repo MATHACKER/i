@@ -54,7 +54,7 @@ async def anime(message: Message):
   wallpape = await wall.upload(f"wallpaper_{random.randint(0, 31)}.jpg")
 
   
-  await asyncio.sleep(0.1)
+  await asyncio.sleep(0.2)
   await message.answer('Ваши обои готовы\nПохожая команда: "пикча аниме"', attachment=wallpape)
 
 @user.on.chat_message(text=['пикча аниме', 'картинка анимэ', 'пикча anime', 'картинка anime'])
