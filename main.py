@@ -49,7 +49,13 @@ async def kick(message: Message):
 
 @user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'wallpaper anime'])
 async def anime(message: Message):
-  await message.answer('Данная команда переименовона в "пикча аниме" !')
+  await message.answer('Ожидайте ...')
+  wall = PhotoMessageUploader(user.api)
+  wall = await wall.upload(f"wallpaper/wallpaper_{random.randint(0, 31)}")
+
+  
+
+  await message.answer('Ваши обои готовы\nПохожая команда: "пикча аниме"', attachment=uploader)
 
 @user.on.chat_message(text=['пикча аниме', 'картинка анимэ', 'пикча anime', 'картинка anime'])
 async def anime(message: Message):
@@ -71,9 +77,7 @@ async def anime(message: Message):
   upload = PhotoMessageUploader(user.api)
   uploader = await upload.upload("wallpaper.png")
 
-  
-
-  await message.answer("Ваши обои готовы", attachment=uploader)
+  await message.answer("Ваша пикча готова", attachment=uploader)
 
 @user.on.message(text=['цитата', 'цит', 'цитатни', 'цита'])
 async def citata(message: Message):
