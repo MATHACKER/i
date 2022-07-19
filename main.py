@@ -51,7 +51,7 @@ async def kick(message: Message):
 async def anime(message: Message):
   await message.answer('Ожидайте ...')
   wall = PhotoMessageUploader(user.api)
-  wall = await wall.upload(f"wallpaper/wallpaper_{random.randint(0, 31)}.jpg")
+  wall = await wall.upload(f"wallpaper_{random.randint(0, 31)}.jpg")
 
   
   await asyncio.sleep(0.1)
