@@ -47,15 +47,38 @@ async def kick(message: Message):
     await api.messages.remove_chat_user(message.peer_id - 2000000000, message.reply_message.from_id)
     return "Пользователь успешно исключён"
 
+@user.on.chat_message(text=['ржи', 'редкое женское имя', 'нжи', 'необычное женское имя'])
+async def anime(message: Message):
+
+  #await asyncio.sleep(0.01)
+  #await message.answer('Идёт подбор имени...')
+
+  name = requests.post(url='http://api.randomdatatools.ru', data={'gender':'woman', 'typeName':'rare', 'count':1, 'params':'FirstName'}).json()
+
+  await asyncio.sleep(0.1)
+  await message.answer(f'Редкое женское имя: {name["FirstName"]}')
+
+
+
+@user.on.chat_message(text=['стих', 'стихотворение', 'стишок', 'пушкин'])
+async def anime(message: Message):
+  await message.answer('Ожидайте, четверостишье сочиняется...')
+  text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/мы шли по лесу').json()
+  await message.answer(str(text))
+
+
+
 @user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'wallpaper anime'])
 async def anime(message: Message):
   await message.answer('Ожидайте ...')
   wall = PhotoMessageUploader(user.api)
-  wallpape = await wall.upload(f"wallpaper_{random.randint(0, 31)}.jpg")
+  wallpape = await wall.upload(f"wallpaper/wallpaper_{random.randint(0, 31)}.jpg")
 
   
-  await asyncio.sleep(0.2)
+  await asyncio.sleep(0.1)
   await message.answer('Ваши обои готовы\nПохожая команда: "пикча аниме"', attachment=wallpape)
+
+
 
 @user.on.chat_message(text=['пикча аниме', 'картинка анимэ', 'пикча anime', 'картинка anime'])
 async def anime(message: Message):
@@ -78,6 +101,8 @@ async def anime(message: Message):
   uploader = await upload.upload("wallpaper.png")
 
   await message.answer("Ваша пикча готова", attachment=uploader)
+
+
 
 @user.on.message(text=['цитата', 'цит', 'цитатни', 'цита'])
 async def citata(message: Message):
