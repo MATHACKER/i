@@ -75,7 +75,7 @@ async def anime(message: Message):
     #await message.answer(str(rezult))
     await message.answer(rezult['enrichedText'])
   except:
-    await message.answer('Ошибка, повторите попытку!')
+    await message.answer('Ошибка, попробуйте использовать другой текст!')
 
 
 
