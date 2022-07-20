@@ -60,15 +60,26 @@ async def anime(message: Message):
 
 
 
-@user.on.chat_message(text=['стих', 'стихотворение', 'стишок', 'пушкин'])
+@user.on.message(text=['стих', 'стихотворение', 'стишок', 'пушкин'])
 async def anime(message: Message):
-  await message.answer('Ожидайте, четверостишье сочиняется...')
-  text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/мы шли по лесу').json()
-  await message.answer(str(text))
+  try:
+    text = message.reply_message.text
+
+    await message.answer('Ожидайте, четверостишье сочиняется...(4)')
+    text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/text_enrich', headers={'user-agent':str(random.randint(0,100))}, json={f'uuid':'M-2PAZtrj_avJHb-zaiKA', 'methods':'getQuatrain', 'text':f'{text}'}).json()
+    tid=text['taskId']
+    #await message.answer(str(tid))
+    await asyncio.sleep(4)
+
+    rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
+    #await message.answer(str(rezult))
+    await message.answer(rezult['enrichedText'])
+  except:
+    await message.answer('Ошибка, повторите попытку!')
 
 
 
-@user.on.chat_message(text=['обои аниме', 'обои анимэ', 'обои anime', 'wallpaper anime'])
+@user.on.message(text=['обои аниме', 'обои анимэ', 'обои anime', 'wallpaper anime'])
 async def anime(message: Message):
   await message.answer('Ожидайте ...')
   wall = PhotoMessageUploader(user.api)
@@ -80,7 +91,7 @@ async def anime(message: Message):
 
 
 
-@user.on.chat_message(text=['пикча аниме', 'картинка анимэ', 'пикча anime', 'картинка anime'])
+@user.on.message(text=['пикча аниме', 'картинка анимэ', 'пикча anime', 'картинка anime'])
 async def anime(message: Message):
   await message.answer('Ожидайте...')
   headers = {
