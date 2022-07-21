@@ -63,6 +63,8 @@ async def weather(message: Message, city: None):
 
     await message.answer('', attachment=photo)
 
+
+
 @user.on.chat_message(text=['ржи', 'редкое женское имя', 'нжи', 'необычное женское имя'])
 async def name(message: Message):
 
@@ -114,7 +116,7 @@ async def stih(message: Message):
 async def anime(message: Message):
   await message.answer('Ожидайте ...')
   wall = PhotoMessageUploader(user.api)
-  wallpape = await wall.upload(f"wallpaper/wallpaper_{random.randint(0, 31)}.jpg")
+  wallpape = await wall.upload(f"wallpaper_{random.randint(0, 31)}.jpg")
 
   
   await asyncio.sleep(0.1)
