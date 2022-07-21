@@ -99,7 +99,12 @@ async def stih(message: Message):
 
       rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
       #await message.answer(str(rezult))
-      await message.answer(rezult['enrichedText'])
+      try:
+        await message.answer(rezult['enrichedText'])
+      except:
+        await asyncio.sleep(1)
+        rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
+        await message.answer(rezult['enrichedText'])
   except:
     await message.answer('Ошибка, попробуйте использовать другой текст!')
 
