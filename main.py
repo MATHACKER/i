@@ -47,8 +47,24 @@ async def kick(message: Message):
     await api.messages.remove_chat_user(message.peer_id - 2000000000, message.reply_message.from_id)
     return "Пользователь успешно исключён"
 
+
+@user.on.message(text=['погода', 'пог', 'погода <city>', 'пог <city>'])
+async def weather(message: Message, city: None):
+  if city==None:
+    await message.answer('Вы не указали город!')
+  else:
+    weather = requests.get(f'http://v1209481.hosted-by-vdsina.ru/upload/weather/{city}', allow_redirects=True)
+    open('weather.png', 'wb').write(weather.content)
+    
+    weather_photo = PhotoMessageUploader(user.api)
+    photo = await weather_photo.upload(f"weather.png")
+
+    await asyncio.sleep(0.1)
+
+    await message.answer('', attachment=photo)
+
 @user.on.chat_message(text=['ржи', 'редкое женское имя', 'нжи', 'необычное женское имя'])
-async def anime(message: Message):
+async def name(message: Message):
 
   #await asyncio.sleep(0.01)
   #await message.answer('Идёт подбор имени...')
@@ -61,19 +77,29 @@ async def anime(message: Message):
 
 
 @user.on.message(text=['стих', 'стихотворение', 'стишок', 'пушкин'])
-async def anime(message: Message):
+async def stih(message: Message):
   try:
     text = message.reply_message.text
 
     await message.answer('Ожидайте, четверостишье сочиняется...(4)')
-    text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/text_enrich', headers={'user-agent':str(random.randint(0,100))}, json={f'uuid':'M-2PAZtrj_avJHb-zaiKA', 'methods':'getQuatrain', 'text':f'{text}'}).json()
+    text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/text_enrich', json={f'text':f'{text}'}).json()
     tid=text['taskId']
-    #await message.answer(str(tid))
-    await asyncio.sleep(4)
+    #await message.answer(str(text))
+    await asyncio.sleep(int(text['secondsToEnd'] + 2))
 
     rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
     #await message.answer(str(rezult))
-    await message.answer(rezult['enrichedText'])
+
+    try:
+
+      await message.answer(rezult['enrichedText'])
+
+    except: 
+      await asyncio.sleep(1)
+
+      rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
+      #await message.answer(str(rezult))
+      await message.answer(rezult['enrichedText'])
   except:
     await message.answer('Ошибка, попробуйте использовать другой текст!')
 
