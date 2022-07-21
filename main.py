@@ -48,6 +48,12 @@ async def kick(message: Message):
     return "Пользователь успешно исключён"
 
 
+
+@user.on.chat_message(text=['меню', 'менюшка', 'помощь', "команды", 'help', 'menu'])
+async def menu(message: Message):
+  await message.answer('Команды бота:\n1️⃣  Цитата\n2️⃣  Стих\n3️⃣  Погода [город]\n4️⃣  Нжи\n5️⃣  Обои аниме\n6️⃣  Пикча аниме\n7️⃣  Cтикеры [@id]\n\nПодробное описание команд и примеры использования приведены в статье: https://vk.com/@darksnaper-commands.')
+
+
 @user.on.message(text=['погода', 'пог', 'погода <city>', 'пог <city>'])
 async def weather(message: Message, city: None):
   if city==None:
