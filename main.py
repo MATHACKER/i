@@ -17,6 +17,10 @@ sessia='a4051407e07d7699ae90a75b81bcdf0b1549d8e1929d07ed5f383389331500206e756916
 user = User(sessia)
 api=API(sessia)
 
+
+
+
+
 user.on.vbml_ignore_case = True
 # Если поставить эту функцию ниже sticker_handler - она не будет работать.
 
@@ -54,6 +58,12 @@ async def menu(message: Message):
   await message.answer('Команды бота:\n1️⃣  Цитата\n2️⃣  Стих\n3️⃣  Погода [город]\n4️⃣  Нжи\n5️⃣  Обои аниме\n6️⃣  Пикча аниме\n7️⃣  Cтикеры [@id]\n\nПодробное описание команд и примеры использования приведены в статье: https://vk.com/@darksnaper-commands.')
 
 
+#@user.on.chat_message(text=['проф', 'профиль', 'prof', "profile"])
+#async def profile(message: Message):
+#  await message.answer(f'{message.first_name}, Ваш профиль:\nНик: ')
+
+
+
 @user.on.message(text=['погода', 'пог', 'погода <city>', 'пог <city>'])
 async def weather(message: Message, city: None):
   if city==None:
@@ -86,35 +96,42 @@ async def name(message: Message):
 
 @user.on.message(text=['стих', 'стихотворение', 'стишок', 'пушкин'])
 async def stih(message: Message):
-  try:
-    text = message.reply_message.text
+  if len(message.reply_message.text)<5:
+    await message.answer('Минимальная длина текста 5 символов(включая пробелы)!')
 
-    await message.answer('Ожидайте, четверостишье сочиняется...(4)')
-    text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/text_enrich', json={f'text':f'{text}'}).json()
-    tid=text['taskId']
-    #await message.answer(str(text))
-    await asyncio.sleep(int(text['secondsToEnd'] + 2))
+  elif len(message.reply_message.text)>30:
+    await message.answer('Максимальная длина текста 30 символов(включая пробелы)!')
 
-    rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
-    #await message.answer(str(rezult))
-
+  else:
     try:
+      text = message.reply_message.text
 
-      await message.answer(rezult['enrichedText'])
-
-    except: 
-      await asyncio.sleep(1)
+      await message.answer('Ожидайте, четверостишье сочиняется...(4)')
+      text = requests.post(url='https://neuro-personalities.tinkoff.ru/tasks/text_enrich', json={f'text':f'{text}'}).json()
+      tid=text['taskId']
+      #await message.answer(str(text))
+      await asyncio.sleep(int(text['secondsToEnd'] + 2))
 
       rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
       #await message.answer(str(rezult))
+
       try:
+
         await message.answer(rezult['enrichedText'])
-      except:
+
+      except: 
         await asyncio.sleep(1)
+
         rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
-        await message.answer(rezult['enrichedText'])
-  except:
-    await message.answer('Ошибка, попробуйте использовать другой текст!')
+        #await message.answer(str(rezult))
+        try:
+          await message.answer(rezult['enrichedText'])
+        except:
+          await asyncio.sleep(1)
+          rezult = requests.get(url=f'https://neuro-personalities.tinkoff.ru/tasks/{tid}').json()
+          await message.answer(rezult['enrichedText'])
+    except:
+      await message.answer('Ошибка, попробуйте использовать другой текст!')
 
 
 
@@ -262,7 +279,55 @@ async def citata(message: Message):
     await message.answer("💬 Ваша цитата готова!", attachment=photo_cita_vk)
 
 
+@user.on.message(text=['стикеры', 'стикеры <people>', 'стики', 'стики <people>'])
+async def citata(message: Message, people: None):
+  await message.answer('Ожидайте, идёт получение информации о стикерпаках!')
+  try:
+    chel= re.findall(r"[0-9]+", message.text)[0]
+    chel = ''.join(chel).lower()
+  except:
+    chel = message.from_id
+  ids = await api.users.get(chel)
+  ids = ids[0].id
+  q = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}')
+  w = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}&free=true')
+  ####await message.answer(str(q.json()))
+  countFree = str(w.json()['count'])
+  countSell = int(q.json()['count'])
+  names=[]
+  votes = str(q.json()['stickers_vote'])
+  i=0
+  try:
+    while i<=countSell-1:
+      names.append(q.json()['sticker'][i]['name'])
+      i+=1
+    names = ', '.join(names)
+    await message.answer(f'У [id{ids}|этого пользователя] {countFree} стикерпаков, из них {str(countSell)} платных стикер-паков:\n\n{names}\n\nПримерная стоимость:\n— {votes} голосов\n— {int(votes)*7} рублей')
+  except:
+    await message.answer(f'У [id{ids}|этого пользователя] отстутсвуют платные стикерпаки!')
 
+@user.on.message()
+async def registration(message: Message):
+
+
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(user.run_polling())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 @user.on.message()
 async def frend(message:Message):
   if message.text.lower().startswith('инфа'):
@@ -282,35 +347,6 @@ async def frend(message:Message):
     except:
       await message.answer('Произошла ошибка, возможно пользователь заблокирован или не существует!')
       #################################################################
-  elif message.text.lower().startswith('стикеры'):
-    await message.answer('Ожидайте, идёт получение информации о стикерпаках!')
-    try:
-      chel= re.findall(r"[0-9]+", message.text)[0]
-      chel = ''.join(chel).lower()
-    except:
-      chel = message.from_id
-    ids = await api.users.get(chel)
-    ids = ids[0].id
-    q = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}')
-    w = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}&free=true')
-    ####await message.answer(str(q.json()))
-    countFree = str(w.json()['count'])
-    countSell = int(q.json()['count'])
-    names=[]
-    votes = str(q.json()['stickers_vote'])
-    i=0
-    try:
-      while i<=countSell-1:
-        names.append(q.json()['sticker'][i]['name'])
-        i+=1
-      names = ', '.join(names)
-      await message.answer(f'У [id{ids}|этого пользователя] {countFree} стикерпаков, из них {str(countSell)} платных стикер-паков:\n\n{names}\n\nПримерная стоимость:\n— {votes} голосов\n— {int(votes)*7} рублей')
-    except:
-      await message.answer(f'У [id{ids}|этого пользователя] отстутсвуют платные стикерпаки!')
-
+  
     ##########################################################
-
-
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(user.run_polling())
+'''
