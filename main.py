@@ -306,8 +306,6 @@ async def citata(message: Message, people: None):
   except:
     await message.answer(f'У [id{ids}|этого пользователя] отстутсвуют платные стикерпаки!')
 
-@user.on.message()
-async def registration(message: Message):
 
 
 
