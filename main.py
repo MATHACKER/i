@@ -5,6 +5,10 @@ from vkbottle import VKAPIError, API, PhotoMessageUploader
 from vkbottle.user import User, Message
 from vkbottle.dispatch.rules.base import CommandRule
 
+
+import sqlite3
+
+
 import time
 import requests
 import re
@@ -13,11 +17,26 @@ import asyncio
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
 import random
 
+
+async def select(user):
+  global connection, cursor
+  connection = sqlite3.connect('users.db')
+  cursor = connection.cursor()
+
+  cursor.execute(f'SELECT * FROM "users" WHERE "user_id" = {user}')
+
+  res = cursor.fetchone()
+  return res
+
+async def update(column, value, user):
+  update = f'UPDATE "users" SET "{column}" = {value} WHERE "user_id" = "{user}"'
+  curcor.execute(update)
+  connection.commit()
+
+
 sessia='a4051407e07d7699ae90a75b81bcdf0b1549d8e1929d07ed5f383389331500206e756916aa3c18b96d9ba'
 user = User(sessia)
 api=API(sessia)
-
-
 
 
 
@@ -280,13 +299,13 @@ async def citata(message: Message):
 
 
 @user.on.message(text=['стикеры', 'стикеры <people>', 'стики', 'стики <people>'])
-async def citata(message: Message, people: None):
+async def stickers(message: Message):
   await message.answer('Ожидайте, идёт получение информации о стикерпаках!')
   try:
     chel= re.findall(r"[0-9]+", message.text)[0]
     chel = ''.join(chel).lower()
   except:
-    chel = message.from_id
+    chel = message.reply_message.from_id
   ids = await api.users.get(chel)
   ids = ids[0].id
   q = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}')
