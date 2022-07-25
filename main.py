@@ -18,12 +18,15 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
 import random
 
 
+connection = sqlite3.connect('users.db')
+cursor = connection.cursor()
+
 async def select(user):
   global connection, cursor
   connection = sqlite3.connect('users.db')
   cursor = connection.cursor()
 
-  cursor.execute(f'SELECT * FROM "users" WHERE "user_id" = {user}')
+  cursor.execute(f'SELECT * FROM "users" WHERE "id" = {user}')
 
   res = cursor.fetchone()
   return res
@@ -72,14 +75,19 @@ async def kick(message: Message):
 
 
 
-@user.on.chat_message(text=['меню', 'менюшка', 'помощь', "команды", 'help', 'menu'])
+@user.on.message(text=['меню', 'менюшка', 'помощь', "команды", 'help', 'menu'])
 async def menu(message: Message):
   await message.answer('Команды бота:\n1️⃣  Цитата\n2️⃣  Стих\n3️⃣  Погода [город]\n4️⃣  Нжи\n5️⃣  Обои аниме\n6️⃣  Пикча аниме\n7️⃣  Cтикеры [@id]\n\nПодробное описание команд и примеры использования приведены в статье: https://vk.com/@darksnaper-commands.')
 
 
-#@user.on.chat_message(text=['проф', 'профиль', 'prof', "profile"])
-#async def profile(message: Message):
-#  await message.answer(f'{message.first_name}, Ваш профиль:\nНик: ')
+@user.on.message(text=['проф', 'профиль', 'prof', "profile"])
+async def profile(message: Message):
+  a = (await select(message.from_id))
+  #await message.answer(str(a))
+  await message.answer(f'{a[-5]}, Ваш профиль:\n\n🆔 ID: {message.from_id}\n👅 Ник: {a[-2]}\n🍭 Леденцы: {a[-3]}\n💎 Алмазы: {a[-4]}')
+
+
+
 
 
 
@@ -327,6 +335,14 @@ async def stickers(message: Message):
 
 
 
+@user.on.message()
+async def reg(message: Message):
+  name = await api.users.get(message.from_id)
+  family = name[0].last_name
+  name = name[0].first_name
+  insert = f"INSERT INTO users('id', 'nick', 'gold', 'diamond', 'first_name', 'last_name') VALUES({message.from_id}, '{name}', 0, 0, '{name}', '{family}')"
+  cursor.execute(insert)
+  connection.commit()
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(user.run_polling())
