@@ -1,7 +1,7 @@
 #a4051407e07d7699ae90a75b81bcdf0b1549d8e1929d07ed5f383389331500206e756916aa3c18b96d9ba
 from typing import Tuple
 
-from vkbottle import VKAPIError, API, PhotoMessageUploader
+from vkbottle import DocMessagesUploader, VKAPIError, API, PhotoMessageUploader
 from vkbottle.user import User, Message
 from vkbottle.dispatch.rules.base import CommandRule
 
@@ -18,13 +18,10 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
 import random
 
 
-connection = sqlite3.connect('users.db')
+connection = sqlite3.connect('user.db')
 cursor = connection.cursor()
 
 async def select(user):
-  global connection, cursor
-  connection = sqlite3.connect('users.db')
-  cursor = connection.cursor()
 
   cursor.execute(f'SELECT * FROM "users" WHERE "id" = {user}')
 
@@ -32,9 +29,11 @@ async def select(user):
   return res
 
 async def update(column, value, user):
-  update = f'UPDATE "users" SET "{column}" = {value} WHERE "user_id" = "{user}"'
-  curcor.execute(update)
+  update = f'UPDATE users SET {column} = \'{value}\' WHERE "id" = "{user}"'
+  cursor.execute(update)
   connection.commit()
+
+
 
 
 sessia='a4051407e07d7699ae90a75b81bcdf0b1549d8e1929d07ed5f383389331500206e756916aa3c18b96d9ba'
@@ -84,10 +83,28 @@ async def menu(message: Message):
 async def profile(message: Message):
   a = (await select(message.from_id))
   #await message.answer(str(a))
-  await message.answer(f'{a[-5]}, Ваш профиль:\n\n🆔 ID: {message.from_id}\n👅 Ник: {a[-2]}\n🍭 Леденцы: {a[-3]}\n💎 Алмазы: {a[-4]}')
+  await message.answer(f'{a[-2]}, Ваш профиль:\n\n🆔 ID: {message.from_id}\n👅 Ник: {a[-5]}\n🍭 Леденцы: {a[-3]}\n💎 Алмазы: {a[-4]}')
 
 
-
+@user.on.message(text=['ник <nick>', 'ник', 'nick <nick>', 'nick'])
+async def nick(message: Message, nick=None):
+  if nick==None:
+    await message.answer('Вы не указали ник!')
+  else:
+    nick = nick.replace('\n', ' ')
+    a = cursor.execute('SELECT * FROM users').fetchall()
+    #await message.answer(str(a))
+    for i in a:
+      if nick == a[2]:
+        await message.answer('абоба')
+        break
+      else:
+        continue
+    if nick in a:
+      await message.answer('ник занят')
+    else:
+      await update("nick", nick, message.from_id)
+      await message.answer(f'Вы успешно сменили ник на {nick}')
 
 
 
@@ -313,7 +330,10 @@ async def stickers(message: Message):
     chel= re.findall(r"[0-9]+", message.text)[0]
     chel = ''.join(chel).lower()
   except:
-    chel = message.reply_message.from_id
+    try:
+      chel = message.reply_message.from_id
+    except:
+      chel = message.from_id
   ids = await api.users.get(chel)
   ids = ids[0].id
   q = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}')
@@ -334,15 +354,28 @@ async def stickers(message: Message):
     await message.answer(f'У [id{ids}|этого пользователя] отстутсвуют платные стикерпаки!')
 
 
+@user.on.private_message(text='бд')
+async def bd(message: Message):
+  if message.from_id==336215602:
+
+    doc_upd = DocMessagesUploader(user.api)
+    baza = await doc_upd.upload('users.bd', 'users.db', peer_id=message.peer_id)
+    
+    await message.answer('Файл базы', attachment=baza)
 
 @user.on.message()
 async def reg(message: Message):
-  name = await api.users.get(message.from_id)
-  family = name[0].last_name
-  name = name[0].first_name
-  insert = f"INSERT INTO users('id', 'nick', 'gold', 'diamond', 'first_name', 'last_name') VALUES({message.from_id}, '{name}', 0, 0, '{name}', '{family}')"
-  cursor.execute(insert)
-  connection.commit()
+  if (await select(message.from_id)) is None:
+    name = await api.users.get(message.from_id)
+    family = name[0].last_name
+    name = name[0].first_name
+    insert = f"INSERT INTO users('id', 'nick', 'gold', 'diamond', 'first_name', 'last_name') VALUES({message.from_id}, '{name}', 0, 0, '{name}', '{family}')"
+    cursor.execute(insert)
+    connection.commit()
+  else:
+    pass
+
+
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(user.run_polling())
