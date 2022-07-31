@@ -5,7 +5,6 @@ from vkbottle import DocMessagesUploader, VKAPIError, API, PhotoMessageUploader
 from vkbottle.user import User, Message
 from vkbottle.dispatch.rules.base import CommandRule
 
-
 import sqlite3
 
 
@@ -258,6 +257,8 @@ async def citata(message: Message):
     name_font = ImageFont.truetype('arial.ttf', size=38)
 
     head = "Цитаты великих людей"
+
+    text = text.replace('\n', ' ')
     text = text.replace(' ', ' ')
     text = text[:38] + '\n' + text[38:]
 
@@ -354,6 +355,12 @@ async def stickers(message: Message):
     await message.answer(f'У [id{ids}|этого пользователя] отстутсвуют платные стикерпаки!')
 
 
+
+
+
+
+
+
 @user.on.private_message(text='бд')
 async def bd(message: Message):
   if message.from_id==336215602:
@@ -362,6 +369,8 @@ async def bd(message: Message):
     baza = await doc_upd.upload('users.bd', 'users.db', peer_id=message.peer_id)
     
     await message.answer('Файл базы', attachment=baza)
+
+
 
 @user.on.message()
 async def reg(message: Message):
