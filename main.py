@@ -91,24 +91,24 @@ async def nick(message: Message, nick=None):
     await message.answer('Вы не указали ник!')
   else:
     nick = nick.replace('\n', ' ')
-    a = cursor.execute('SELECT * FROM users').fetchall()
+    #a = cursor.execute('SELECT * FROM users').fetchall()
     #await message.answer(str(a))
-    for i in a:
-      if nick == a[2]:
-        await message.answer('абоба')
-        break
-      else:
-        continue
-    if nick in a:
-      await message.answer('ник занят')
-    else:
-      await update("nick", nick, message.from_id)
-      await message.answer(f'Вы успешно сменили ник на {nick}')
+    #for i in a:
+      #if nick == a[2]:
+        #await message.answer('абоба')
+        #break
+      #else:
+        #continue
+    #if nick in a:
+      #await message.answer('ник занят')
+    #else:
+    await update("nick", nick, message.from_id)
+    await message.answer(f'Вы успешно сменили ник на {nick}')
 
 
 
 @user.on.message(text=['погода', 'пог', 'погода <city>', 'пог <city>'])
-async def weather(message: Message, city: None):
+async def weather(message: Message, city= None):
   if city==None:
     await message.answer('Вы не указали город!')
   else:
