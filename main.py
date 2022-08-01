@@ -339,11 +339,19 @@ async def stickers(message: Message):
   ids = ids[0].id
   q = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}')
   w = requests.post(f'http://v1209481.hosted-by-vdsina.ru/method/users.stickers?token={sessia}&user_id={int(ids)}&free=true')
+  
   ####await message.answer(str(q.json()))
-  countFree = str(w.json()['count'])
+  ####await message.answer(str(w.json()))
+  try:
+    countFree = str(w.json()['count'])
+  except:
+    countFree = 'очень много'
   countSell = int(q.json()['count'])
+
   names=[]
+
   votes = str(q.json()['stickers_vote'])
+
   i=0
   try:
     while i<=countSell-1:
